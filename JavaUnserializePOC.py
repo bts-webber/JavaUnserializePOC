@@ -13,10 +13,14 @@ class CheckApp(object):
     def CheckWeblogic(self,target):
         '''检测weblogic控制台'''
         try:
-            content=requests.get(target+"/console")
+            content=requests.get(target+"/console/login/LoginForm.jsp").content
+            print content
         except:
             return False
-        if find(content,"管理控制台")!=-1:
+        if  find(content,"Oracle WebLogic Server 管理控制台")!=-1 \
+                or find(content,"Oracle WebLogic Server Administration Console")!=-1 \
+                or find(content,"Oracle WebLogic Server")!=-1 \
+                or find(content,"BEA WebLogic Server"):
             return True
         else:
             return False
@@ -39,27 +43,38 @@ class CheckApp(object):
         except:
             print "Target open failed,continue......"
             return False
-        app=c.headers["X-Powered-By"]
-        content=c.content
-        c.close()
-        if find(app,"Servlet")!=-1 and find(app,"JSP")!=-1:
-            print "Web App is Weblogic"
-            if self.CheckWeblogic(content):
-                print "Target is checkable"
+        if "X-Powered-By" in c.headers.keys():
+            app=c.headers["X-Powered-By"]
+            content=c.content
+            c.close()
+            if find(app,"Servlet")!=-1 and find(app,"JSP")!=-1:
+                print "Web App is Weblogic"
+                if self.CheckWeblogic(target):
+                    print "Target is checkable"
+                    return "Weblogic"
+                else:
+                    print "Target is no checkable"
+                    return False
+            elif find(app,"JBoss-")!=-1 and find(app,"Servlet")!=-1:
+                print "Web App is Jboss"
+                if self.CheckJboss(target):
+                    print "Target is checkable"
+                    return "Jboss"
+                else:
+                    print "Target is not checkable"
+                    return False
+            print "Target is not Weblogic/Jboss,continue......"
+            return False
+        else:
+            if self.CheckWeblogic(target):
+                print "Target is Wbelogic,and is checkable"
                 return "Weblogic"
-            else:
-                print "Target is no checkable"
-                return False
-        elif find(app,"JBoss-")!=-1 and find(app,"Servlet")!=-1:
-            print "Web App is Jboss"
-            if self.CheckJboss(target):
-                print "Target is checkable"
+            elif self.CheckJboss(target):
+                print "Target is Jboss and is checkable"
                 return "Jboss"
             else:
                 print "Target is not checkable"
                 return False
-        print "Target is not Weblogic/Jboss,continue......"
-        return False
 
 class CheckVulnerability(object):
     '''检测是否存在漏洞'''
