@@ -4,12 +4,14 @@ from sys import argv
 from string import find,strip
 import re
 import socket
-#object格式：http://host:port
+#target格式：http://host:port
 class CheckApp(object):
+    ''' 检测web应用组件，并检测是否可以用于漏洞检测'''
     def __init__(self,target):
         self.target = target
 
     def CheckWeblogic(self,target):
+        '''检测weblogic控制台'''
         try:
             content=requests.get(target+"/console")
         except:
@@ -20,6 +22,7 @@ class CheckApp(object):
             return False
 
     def CheckJboss(self,target):
+        '''检测Jboss /invoker/JMXInvokerServlet'''
         try:
             content=requests.get(target+"/invoker/JMXInvokerServlet").content
         except:
@@ -30,6 +33,7 @@ class CheckApp(object):
             return False
 
     def Check(self,target):
+        '''判断web中间件'''
         try:
             c=requests.get(target)
         except:
@@ -58,6 +62,7 @@ class CheckApp(object):
         return False
 
 class CheckVulnerability(object):
+    '''检测是否存在漏洞'''
     def __init__(self,target):
         self.target=target
         self.string_ip="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
@@ -113,8 +118,8 @@ class CheckVulnerability(object):
 
 
 def CheckGo(target):
-    print ">>>>>>>>>>>>>>>Go Checking:"+target+"<<<<<<<<<<<<<<<"
-    endstring=">>>>>>>>>>>>>>>Checking Finished"+"<<<<<<<<<<<<<<<"
+    print "---------------Go Checking:"+target+"-------------"
+    endstring="------------Checking Finished"+"------------"
     checkapp=CheckApp(target).Check(target)
     if checkapp==False:
         print endstring
